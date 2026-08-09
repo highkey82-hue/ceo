@@ -1619,7 +1619,49 @@
         </div>
       </div>
     </section>
+</script>
+  <!-- ORDER TRACKING PORTAL -->
+<section id="order-tracking" style="padding:60px 20px;text-align:center;">
+    <h2>Track Your Order</h2>
+    <p>Enter your Order ID or Tracking Number to check your order status.</p>
 
+    <form id="trackingForm" style="max-width:500px;margin:25px auto;">
+        <input
+            type="text"
+            id="trackingInput"
+            placeholder="Order ID or Tracking Number"
+            required
+            style="width:100%;padding:15px;margin-bottom:12px;"
+        >
+
+        <button type="submit" style="padding:15px 25px;">
+            Track Order
+        </button>
+    </form>
+<div id="trackingResult" style="max-width:700px;margin:25px auto;"></div>
+    <div id="trackingResult"></div>
+</section>
+<script>
+document.getElementById("trackingForm").addEventListener("submit", function(event) {
+    event.preventDefault();
+
+    const trackingNumber = document.getElementById("trackingInput").value.trim();
+    const result = document.getElementById("trackingResult");
+
+    if (!trackingNumber) {
+        result.innerHTML = "<p>Please enter your Order ID or Tracking Number.</p>";
+        return;
+    }
+
+    result.innerHTML = `
+        <div style="margin-top:20px;padding:20px;border-radius:10px;">
+            <h3>Order Tracking</h3>
+            <p>Searching for: <strong>${trackingNumber}</strong></p>
+            <p>Order information will be connected to the live database in the next step.</p>
+        </div>
+    `;
+});
+</script>
     <!-- Blog -->
     <section class="section" id="blog">
       <div class="container">
@@ -2045,49 +2087,7 @@
         submitButton.textContent = originalText;
       }
     });
-  </script>
-  <!-- ORDER TRACKING PORTAL -->
-<section id="order-tracking" style="padding:60px 20px;text-align:center;">
-    <h2>Track Your Order</h2>
-    <p>Enter your Order ID or Tracking Number to check your order status.</p>
-
-    <form id="trackingForm" style="max-width:500px;margin:25px auto;">
-        <input
-            type="text"
-            id="trackingInput"
-            placeholder="Order ID or Tracking Number"
-            required
-            style="width:100%;padding:15px;margin-bottom:12px;"
-        >
-
-        <button type="submit" style="padding:15px 25px;">
-            Track Order
-        </button>
-    </form>
-<div id="trackingResult" style="max-width:700px;margin:25px auto;"></div>
-    <div id="trackingResult"></div>
-</section>
-<script>
-document.getElementById("trackingForm").addEventListener("submit", function(event) {
-    event.preventDefault();
-
-    const trackingNumber = document.getElementById("trackingInput").value.trim();
-    const result = document.getElementById("trackingResult");
-
-    if (!trackingNumber) {
-        result.innerHTML = "<p>Please enter your Order ID or Tracking Number.</p>";
-        return;
-    }
-
-    result.innerHTML = `
-        <div style="margin-top:20px;padding:20px;border-radius:10px;">
-            <h3>Order Tracking</h3>
-            <p>Searching for: <strong>${trackingNumber}</strong></p>
-            <p>Order information will be connected to the live database in the next step.</p>
-        </div>
-    `;
-});
-</script>
+  
 <script>
 const trackingForm = document.getElementById("orderTrackingForm");
 
