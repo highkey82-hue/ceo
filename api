@@ -1,2 +1,231 @@
 orders
       create.php
+                <?php
+
+require_once "../../config/database.php";
+
+header("Content-Type: application/json");
+
+if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+    http_response_code(405);
+    echo json_encode([
+        "success" => false,
+        "message" => "Method not allowed."
+    ]);
+    exit;
+}
+
+$data = json_decode(file_get_contents("php://input"), true);
+
+$name = trim($data["name"] ?? "");
+$email = trim($data["email"] ?? "");
+$phone = trim($data["phone"] ?? "");
+$address = trim($data["address"] ?? "");
+$serviceType = trim($data["service_type"] ?? "");
+$orderDetails = trim($data["order_details"] ?? "");
+$totalAmount = (float)($data["total_amount"] ?? 0);
+$amountPaid = (float)($data["amount_paid"] ?? 0);
+$estimatedCompletion = $data["estimated_completion"] ?? null;
+
+if ($name === "" || $serviceType === "") {
+    http_response_code(400);
+
+    echo json_encode([
+        "success" => false,
+        "message" => "Customer name and service type are required."
+    ]);
+
+    exit;
+}
+
+try {
+
+    $pdo->beginTransaction();
+
+    /*
+     * Create or find customer
+     */
+    $customerQuery = $pdo->prepare("
+        SELECT id
+        FROM customers
+        WHERE email = :email
+        AND email <> ''
+        LIMIT 1
+    ");
+
+    $customerQuery->execute([
+        ":email" => $email
+    ]);
+
+    $customer = $customerQuery->fetch();
+
+    if ($customer) {
+
+        $customerId = $customer["id"];
+
+        $updateCustomer = $pdo->prepare("
+            UPDATE customers
+            SET name = :name,
+                phone = :phone,
+                address = :address
+            WHERE id = :id
+        ");
+
+        $updateCustomer->execute([
+            ":name" => $name,
+            ":phone" => $phone,
+            ":address" => $address,
+            ":id" => $customerId
+        ]);
+
+    } else {
+
+        $createCustomer = $pdo->prepare("
+            INSERT INTO customers
+            (name, email, phone, address)
+            VALUES
+            (:name, :email, :phone, :address)
+        ");
+
+        $createCustomer->execute([
+            ":name" => $name,
+            ":email" => $email,
+            ":phone" => $phone,
+            ":address" => $address
+        ]);
+
+        $customerId = $pdo->lastInsertId();
+    }
+
+    /*
+     * Generate unique Order ID
+     */
+    do {
+
+        $orderId = "TC-" . date("Ymd") . "-" . strtoupper(bin2hex(random_bytes(4)));
+
+        $checkOrder = $pdo->prepare("
+            SELECT id
+            FROM orders
+            WHERE order_id = :order_id
+            LIMIT 1
+        ");
+
+        $checkOrder->execute([
+            ":order_id" => $orderId
+        ]);
+
+    } while ($checkOrder->fetch());
+
+    /*
+     * Generate unique Tracking Number
+     */
+    do {
+
+        $trackingNumber = "TC" . strtoupper(bin2hex(random_bytes(6)));
+
+        $checkTracking = $pdo->prepare("
+            SELECT id
+            FROM orders
+            WHERE tracking_number = :tracking_number
+            LIMIT 1
+        ");
+
+        $checkTracking->execute([
+            ":tracking_number" => $trackingNumber
+        ]);
+
+    } while ($checkTracking->fetch());
+
+    /*
+     * Create order
+     */
+    $orderQuery = $pdo->prepare("
+        INSERT INTO orders
+        (
+            order_id,
+            tracking_number,
+            customer_id,
+            service_type,
+            order_details,
+            total_amount,
+            amount_paid,
+            status,
+            estimated_completion
+        )
+        VALUES
+        (
+            :order_id,
+            :tracking_number,
+            :customer_id,
+            :service_type,
+            :order_details,
+            :total_amount,
+            :amount_paid,
+            'Received',
+            :estimated_completion
+        )
+    ");
+
+    $orderQuery->execute([
+        ":order_id" => $orderId,
+        ":tracking_number" => $trackingNumber,
+        ":customer_id" => $customerId,
+        ":service_type" => $serviceType,
+        ":order_details" => $orderDetails,
+        ":total_amount" => $totalAmount,
+        ":amount_paid" => $amountPaid,
+        ":estimated_completion" => $estimatedCompletion
+    ]);
+
+    $databaseOrderId = $pdo->lastInsertId();
+
+    /*
+     * Create initial tracking history
+     */
+    $historyQuery = $pdo->prepare("
+        INSERT INTO order_status_history
+        (
+            order_id,
+            old_status,
+            new_status,
+            note
+        )
+        VALUES
+        (
+            :order_id,
+            NULL,
+            'Received',
+            'Order created'
+        )
+    ");
+
+    $historyQuery->execute([
+        ":order_id" => $databaseOrderId
+    ]);
+
+    $pdo->commit();
+
+    echo json_encode([
+        "success" => true,
+        "message" => "Order created successfully.",
+        "order" => [
+            "order_id" => $orderId,
+            "tracking_number" => $trackingNumber,
+            "status" => "Received"
+        ]
+    ]);
+
+} catch (Exception $e) {
+
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+
+    http_response_code(500);
+
+    echo json_encode([
+        "success" => false,
+        "message" => "Unable to create order."
+    ]);
+}
