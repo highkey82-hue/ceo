@@ -1584,7 +1584,80 @@
         </button>
 
     </form>
+<div id="receiptArea" style="display:none;">
 
+    <div id="receipt" style="
+        max-width:700px;
+        margin:25px auto;
+        padding:30px;
+        background:#fff;
+        border-radius:14px;
+        box-shadow:0 8px 25px rgba(0,0,0,.10);
+    ">
+
+        <h2>TAO Clean</h2>
+        <h3>Receipt / Invoice</h3>
+
+        <p>
+            <strong>Invoice Number:</strong>
+            <span id="invoiceNumber"></span>
+        </p>
+
+        <p>
+            <strong>Order ID:</strong>
+            <span id="receiptOrderId"></span>
+        </p>
+
+        <p>
+            <strong>Tracking Number:</strong>
+            <span id="receiptTracking"></span>
+        </p>
+
+        <p>
+            <strong>Customer:</strong>
+            <span id="receiptCustomer"></span>
+        </p>
+
+        <p>
+            <strong>Service:</strong>
+            <span id="receiptService"></span>
+        </p>
+
+        <p>
+            <strong>Order Details:</strong>
+            <span id="receiptDetails"></span>
+        </p>
+
+        <p>
+            <strong>Date:</strong>
+            <span id="receiptDate"></span>
+        </p>
+
+        <p>
+            <strong>Amount:</strong>
+            <span id="receiptAmount">Pending</span>
+        </p>
+
+        <p>
+            <strong>Payment Status:</strong>
+            <span id="receiptPayment">Pending</span>
+        </p>
+
+    </div>
+
+    <div style="text-align:center;margin-top:15px;">
+
+        <button type="button" onclick="printReceipt()">
+            Print Receipt
+        </button>
+
+        <button type="button" onclick="downloadReceipt()">
+            Download Receipt
+        </button>
+
+    </div>
+
+</div>
     <div id="orderResult"></div>
 </section>
 </script>
