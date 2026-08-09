@@ -2089,4 +2089,150 @@ document.getElementById("trackingForm").addEventListener("submit", function(even
 });
 </script>
 </body>
+<script>
+const ORDER_API = "api/orders/create.php";
+
+/*
+|--------------------------------------------------------------------------
+| Create Order
+|--------------------------------------------------------------------------
+*/
+
+async function createOrder(orderData) {
+
+    const response = await fetch(ORDER_API, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            action: "create",
+            ...orderData
+        })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+        throw new Error(
+            result.message || "Unable to create order."
+        );
+    }
+
+    return result;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Search Orders
+|--------------------------------------------------------------------------
+*/
+
+async function searchOrders(searchValue) {
+
+    const response = await fetch(ORDER_API, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            action: "search",
+            search: searchValue
+        })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+        throw new Error(
+            result.message || "Unable to search orders."
+        );
+    }
+
+    return result;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Get Order
+|--------------------------------------------------------------------------
+*/
+
+async function getOrder(orderOrTrackingNumber) {
+
+    const response = await fetch(ORDER_API, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            action: "get",
+            search: orderOrTrackingNumber
+        })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+        throw new Error(
+            result.message || "Order not found."
+        );
+    }
+
+    return result;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Update Order Status
+|--------------------------------------------------------------------------
+*/
+
+async function updateOrderStatus(
+    orderId,
+    status,
+    note = ""
+) {
+
+    const response = await fetch(ORDER_API, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            action: "update_status",
+            order_id: orderId,
+            status: status,
+            note: note
+        })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+        throw new Error(
+            result.message || "Unable to update order."
+        );
+    }
+
+    return result;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Safe global access for the existing website
+|--------------------------------------------------------------------------
+*/
+
+window.TAOOrders = {
+    create: createOrder,
+    search: searchOrders,
+    get: getOrder,
+    updateStatus: updateOrderStatus
+};
+</script>
 </html>
