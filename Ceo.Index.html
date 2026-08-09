@@ -2088,6 +2088,149 @@ document.getElementById("trackingForm").addEventListener("submit", function(even
     `;
 });
 </script>
+<script>
+const trackingForm = document.getElementById("orderTrackingForm");
+
+if (trackingForm) {
+
+    trackingForm.addEventListener("submit", async function (event) {
+
+        event.preventDefault();
+
+        const searchValue =
+            document.getElementById("trackingSearch").value.trim();
+
+        const message =
+            document.getElementById("trackingMessage");
+
+        const resultBox =
+            document.getElementById("trackingResult");
+
+        message.textContent = "Searching...";
+        resultBox.innerHTML = "";
+
+        if (!searchValue) {
+            message.textContent = "Please enter your Order ID or Tracking Number.";
+            return;
+        }
+
+        try {
+
+            const result =
+                await window.TAOOrders.get(searchValue);
+
+            const order = result.order;
+            const history = result.tracking_history || [];
+
+            message.textContent = "";
+
+            let historyHTML = "";
+
+            if (history.length > 0) {
+
+                historyHTML = `
+                    <div style="margin-top:25px;">
+                        <h3 style="color:#35106b;">
+                            Tracking History
+                        </h3>
+
+                        ${history.map(item => `
+                            <div style="
+                                padding:15px;
+                                margin-top:10px;
+                                background:#ffffff;
+                                border-radius:10px;
+                                border-left:4px solid #35106b;
+                            ">
+
+                                <strong>
+                                    ${escapeTrackingHTML(item.new_status)}
+                                </strong>
+
+                                <div style="color:#68616d; margin-top:5px;">
+                                    ${escapeTrackingHTML(item.note || "")}
+                                </div>
+
+                                <small style="color:#68616d;">
+                                    ${escapeTrackingHTML(item.created_at || "")}
+                                </small>
+
+                            </div>
+                        `).join("")}
+
+                    </div>
+                `;
+            }
+
+            resultBox.innerHTML = `
+
+                <div style="
+                    background:#ffffff;
+                    padding:25px;
+                    border-radius:14px;
+                    box-shadow:0 8px 20px rgba(37,7,71,.08);
+                ">
+
+                    <h3 style="color:#35106b;">
+                        Order ${escapeTrackingHTML(order.order_id)}
+                    </h3>
+
+                    <p>
+                        <strong>Tracking Number:</strong>
+                        ${escapeTrackingHTML(order.tracking_number)}
+                    </p>
+
+                    <p>
+                        <strong>Service:</strong>
+                        ${escapeTrackingHTML(order.service_type)}
+                    </p>
+
+                    <p>
+                        <strong>Status:</strong>
+                        ${escapeTrackingHTML(order.status)}
+                    </p>
+
+                    <p>
+                        <strong>Order Date:</strong>
+                        ${escapeTrackingHTML(order.created_at || "")}
+                    </p>
+
+                    <p>
+                        <strong>Estimated Completion:</strong>
+                        ${escapeTrackingHTML(order.estimated_completion || "Not set")}
+                    </p>
+
+                    ${historyHTML}
+
+                </div>
+            `;
+
+        } catch (error) {
+
+            message.textContent =
+                error.message || "Unable to find this order.";
+
+            resultBox.innerHTML = "";
+        }
+
+    });
+}
+
+
+/*
+Safe display of database values.
+*/
+
+function escapeTrackingHTML(value) {
+
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+</script>
 </body>
 <section id="order-tracking" style="padding:60px 20px; background:#f8f7fa;">
   <div style="max-width:900px; margin:auto;">
