@@ -236,7 +236,65 @@ try {
         ]);
 
         $databaseOrderId = $pdo->lastInsertId();
+/*
+|--------------------------------------------------------------------------
+| CREATE INVOICE
+|--------------------------------------------------------------------------
+*/
 
+do {
+
+    $invoiceNumber =
+        "INV-" .
+        date("Ymd") .
+        "-" .
+        strtoupper(bin2hex(random_bytes(4)));
+
+    $invoiceCheck = $pdo->prepare("
+        SELECT id
+        FROM invoices
+        WHERE invoice_number = :invoice_number
+        LIMIT 1
+    ");
+
+    $invoiceCheck->execute([
+        ":invoice_number" => $invoiceNumber
+    ]);
+
+} while ($invoiceCheck->fetch());
+
+
+$invoiceQuery = $pdo->prepare("
+    INSERT INTO invoices
+    (
+        invoice_number,
+        order_id,
+        total_amount,
+        amount_paid,
+        payment_status
+    )
+    VALUES
+    (
+        :invoice_number,
+        :order_id,
+        :total_amount,
+        :amount_paid,
+        :payment_status
+    )
+");
+
+$paymentStatus =
+    ($amountPaid >= $totalAmount && $totalAmount > 0)
+        ? "Paid"
+        : "Pending";
+
+$invoiceQuery->execute([
+    ":invoice_number" => $invoiceNumber,
+    ":order_id" => $databaseOrderId,
+    ":total_amount" => $totalAmount,
+    ":amount_paid" => $amountPaid,
+    ":payment_status" => $paymentStatus
+]);
         /*
         Add initial tracking history.
         */
