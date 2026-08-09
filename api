@@ -282,7 +282,63 @@ $invoiceQuery = $pdo->prepare("
         :payment_status
     )
 ");
+/*
+|--------------------------------------------------------------------------
+| EMAIL RECEIPT
+|--------------------------------------------------------------------------
+*/
 
+$to = "taoclean5@gmail.com";
+
+$subject = "TAO Clean Receipt - " . $invoiceNumber;
+
+$emailMessage = "
+TAO CLEAN
+Receipt / Invoice
+
+Invoice Number: {$invoiceNumber}
+
+Order ID: {$orderId}
+
+Tracking Number: {$trackingNumber}
+
+Customer Name: {$name}
+
+Email: {$email}
+
+Phone: {$phone}
+
+Service: {$serviceType}
+
+Order Details:
+{$orderDetails}
+
+Total Amount: {$totalAmount}
+
+Amount Paid: {$amountPaid}
+
+Payment Status: {$paymentStatus}
+
+Estimated Completion:
+{$estimatedCompletion}
+
+Thank you for choosing TAO Clean.
+";
+
+$headers = "From: noreply@taoclean.com\r\n";
+
+if ($email !== "") {
+    $headers .= "Reply-To: {$email}\r\n";
+}
+
+$headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+
+@mail(
+    $to,
+    $subject,
+    $emailMessage,
+    $headers
+);
 $paymentStatus =
     ($amountPaid >= $totalAmount && $totalAmount > 0)
         ? "Paid"
