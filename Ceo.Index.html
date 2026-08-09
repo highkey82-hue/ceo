@@ -2024,5 +2024,26 @@
 
     <div id="trackingResult"></div>
 </section>
+<script>
+document.getElementById("trackingForm").addEventListener("submit", function(event) {
+    event.preventDefault();
+
+    const trackingNumber = document.getElementById("trackingInput").value.trim();
+    const result = document.getElementById("trackingResult");
+
+    if (!trackingNumber) {
+        result.innerHTML = "<p>Please enter your Order ID or Tracking Number.</p>";
+        return;
+    }
+
+    result.innerHTML = `
+        <div style="margin-top:20px;padding:20px;border-radius:10px;">
+            <h3>Order Tracking</h3>
+            <p>Searching for: <strong>${trackingNumber}</strong></p>
+            <p>Order information will be connected to the live database in the next step.</p>
+        </div>
+    `;
+});
+</script>
 </body>
 </html>
