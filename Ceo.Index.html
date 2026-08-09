@@ -1660,6 +1660,403 @@
 </div>
     <div id="orderResult"></div>
 </section>
+<script>
+
+/* =========================================
+   TAO CLEAN - RECEIPT / INVOICE SYSTEM
+========================================= */
+
+
+/* Generate Invoice Number */
+
+function generateInvoiceNumber() {
+
+    const date = new Date();
+
+    const year = date.getFullYear();
+
+    const random =
+        Math.random()
+            .toString(36)
+            .substring(2, 8)
+            .toUpperCase();
+
+    return "INV-" + year + "-" + random;
+}
+
+
+/* Show Receipt */
+
+function showReceipt(orderData) {
+
+    const receiptArea =
+        document.getElementById("receiptArea");
+
+    if (!receiptArea) return;
+
+
+    const invoiceNumber =
+        generateInvoiceNumber();
+
+
+    document.getElementById("invoiceNumber").textContent =
+        invoiceNumber;
+
+
+    document.getElementById("receiptOrderId").textContent =
+        orderData.order_id || "";
+
+
+    document.getElementById("receiptTracking").textContent =
+        orderData.tracking_number || "";
+
+
+    document.getElementById("receiptCustomer").textContent =
+        document.getElementById("customerName")?.value || "";
+
+
+    document.getElementById("receiptService").textContent =
+        document.getElementById("serviceType")?.value || "";
+
+
+    document.getElementById("receiptDetails").textContent =
+        document.getElementById("orderDetails")?.value || "";
+
+
+    document.getElementById("receiptDate").textContent =
+        new Date().toLocaleDateString();
+
+
+    receiptArea.style.display = "block";
+
+
+    receiptArea.scrollIntoView({
+        behavior: "smooth"
+    });
+}
+
+
+
+/* =========================================
+   PRINT RECEIPT
+========================================= */
+
+function printReceipt() {
+
+    const receipt =
+        document.getElementById("receipt");
+
+    if (!receipt) return;
+
+
+    const printWindow =
+        window.open(
+            "",
+            "_blank",
+            "width=800,height=700"
+        );
+
+
+    printWindow.document.write(`
+
+        <!DOCTYPE html>
+
+        <html>
+
+        <head>
+
+            <title>
+                TAO Clean Receipt
+            </title>
+
+            <style>
+
+                body {
+                    font-family: Arial, sans-serif;
+                    padding: 40px;
+                    color: #202020;
+                }
+
+                .receipt {
+                    max-width: 700px;
+                    margin: auto;
+                }
+
+                h2 {
+                    color: #35106b;
+                }
+
+                p {
+                    margin: 10px 0;
+                }
+
+            </style>
+
+        </head>
+
+        <body>
+
+            <div class="receipt">
+
+                ${receipt.innerHTML}
+
+            </div>
+
+        </body>
+
+        </html>
+
+    `);
+
+
+    printWindow.document.close();
+
+    printWindow.focus();
+
+    printWindow.print();
+
+}
+
+
+
+/* =========================================
+   DOWNLOAD RECEIPT
+========================================= */
+
+function downloadReceipt() {
+
+    const receipt =
+        document.getElementById("receipt");
+
+    if (!receipt) return;
+
+
+    const invoice =
+        document.getElementById("invoiceNumber")
+        ?.textContent || "Receipt";
+
+
+    const receiptText =
+        receipt.innerText;
+
+
+    const blob =
+        new Blob(
+            [receiptText],
+            {
+                type: "text/plain"
+            }
+        );
+
+
+    const url =
+        URL.createObjectURL(blob);
+
+
+    const link =
+        document.createElement("a");
+
+
+    link.href = url;
+
+
+    link.download =
+        "TAO-Clean-" +
+        invoice +
+        ".txt";
+
+
+    document.body.appendChild(link);
+
+
+    link.click();
+
+
+    document.body.removeChild(link);
+
+
+    URL.revokeObjectURL(url);
+
+}
+
+
+
+/* =========================================
+   CONNECT PLACE ORDER TO RECEIPT
+========================================= */
+
+const placeOrderForm =
+    document.getElementById("placeOrderForm");
+
+
+if (placeOrderForm) {
+
+    placeOrderForm.addEventListener(
+        "submit",
+        async function(event) {
+
+            event.preventDefault();
+
+
+            const resultBox =
+                document.getElementById("orderResult");
+
+
+            if (resultBox) {
+
+                resultBox.innerHTML =
+                    "Submitting order...";
+
+            }
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        "api/orders/create.php",
+                        {
+
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body: JSON.stringify({
+
+                                action: "create",
+
+                                name:
+                                    document
+                                    .getElementById(
+                                        "customerName"
+                                    )
+                                    .value,
+
+                                email:
+                                    document
+                                    .getElementById(
+                                        "customerEmail"
+                                    )
+                                    .value,
+
+                                phone:
+                                    document
+                                    .getElementById(
+                                        "customerPhone"
+                                    )
+                                    .value,
+
+                                address:
+                                    document
+                                    .getElementById(
+                                        "pickupAddress"
+                                    )
+                                    .value,
+
+                                service_type:
+                                    document
+                                    .getElementById(
+                                        "serviceType"
+                                    )
+                                    .value,
+
+                                order_details:
+                                    document
+                                    .getElementById(
+                                        "orderDetails"
+                                    )
+                                    .value
+
+                            })
+
+                        }
+                    );
+
+
+                const result =
+                    await response.json();
+
+
+                if (!result.success) {
+
+                    if (resultBox) {
+
+                        resultBox.innerHTML =
+                            result.message ||
+                            "Unable to create order.";
+
+                    }
+
+                    return;
+
+                }
+
+
+                /* Successful order */
+
+                if (resultBox) {
+
+                    resultBox.innerHTML = `
+
+                        <h3>
+                            Order Created Successfully
+                        </h3>
+
+                        <p>
+                            Your order has been received.
+                        </p>
+
+                        <p>
+                            <strong>
+                                Order ID:
+                            </strong>
+
+                            ${result.order.order_id}
+                        </p>
+
+                        <p>
+                            <strong>
+                                Tracking Number:
+                            </strong>
+
+                            ${result.order.tracking_number}
+                        </p>
+
+                    `;
+
+                }
+
+
+                /* Show receipt */
+
+                showReceipt(result.order);
+
+
+            }
+
+            catch (error) {
+
+                console.error(error);
+
+
+                if (resultBox) {
+
+                    resultBox.innerHTML =
+                        "Unable to connect to the order system.";
+
+                }
+
+            }
+
+        }
+    );
+
+}
+
+</script>
 </script>
   <!-- ORDER TRACKING PORTAL -->
 <section id="order-tracking" style="padding:60px 20px;text-align:center;">
