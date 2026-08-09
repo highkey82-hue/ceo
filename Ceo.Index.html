@@ -2089,6 +2089,42 @@ document.getElementById("trackingForm").addEventListener("submit", function(even
 });
 </script>
 </body>
+<section id="order-tracking" style="padding:60px 20px; background:#f8f7fa;">
+  <div style="max-width:900px; margin:auto;">
+
+    <h2 style="color:#35106b; margin-bottom:10px;">
+      Track Your Order
+    </h2>
+
+    <p style="color:#68616d; margin-bottom:25px;">
+      Enter your Order ID or Tracking Number to view your order status.
+    </p>
+
+    <form id="orderTrackingForm" style="display:flex; gap:10px; flex-wrap:wrap;">
+
+      <input
+        type="text"
+        id="trackingSearch"
+        placeholder="Order ID or Tracking Number"
+        required
+        style="flex:1; min-width:220px; padding:14px; border:1px solid #e6e2e9; border-radius:8px;"
+      >
+
+      <button
+        type="submit"
+        style="padding:14px 22px; background:#35106b; color:white; border:0; border-radius:8px; cursor:pointer;"
+      >
+        Track Order
+      </button>
+
+    </form>
+
+    <div id="trackingMessage" style="margin-top:20px;"></div>
+
+    <div id="trackingResult" style="margin-top:25px;"></div>
+
+  </div>
+</section>
 <script>
 const ORDER_API = "api/orders/create.php";
 
