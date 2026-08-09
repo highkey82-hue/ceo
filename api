@@ -326,10 +326,14 @@ $invoiceQuery->execute([
             "success" => true,
             "message" => "Order created successfully.",
             "order" => [
-                "order_id" => $orderId,
-                "tracking_number" => $trackingNumber,
-                "status" => "Received"
-            ]
+    "order_id" => $orderId,
+    "tracking_number" => $trackingNumber,
+    "invoice_number" => $invoiceNumber,
+    "status" => "Received",
+    "total_amount" => $totalAmount,
+    "amount_paid" => $amountPaid,
+    "payment_status" => $paymentStatus
+]
         ]);
 
         exit;
