@@ -94,3 +94,18 @@ CREATE TABLE notifications (
     FOREIGN KEY (order_id) REFERENCES orders(id),
     FOREIGN KEY (customer_id) REFERENCES customers(id)
 );
+CREATE TABLE IF NOT EXISTS invoices (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    invoice_number VARCHAR(50) NOT NULL UNIQUE,
+    order_id INT NOT NULL,
+    invoice_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    total_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    amount_paid DECIMAL(12,2) NOT NULL DEFAULT 0,
+    payment_status VARCHAR(30) NOT NULL DEFAULT 'Pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_invoice_order
+        FOREIGN KEY (order_id)
+        REFERENCES orders(id)
+        ON DELETE CASCADE
+);
